@@ -1,6 +1,7 @@
 import logging
 
 from app.core.config import settings
+from app.filters.models import ApplyResult
 from app.repositories.state import StateRepository
 from app.services.filter_request_service import FilterRequestService
 from app.telegram.filters import is_allowed_chat, is_command
@@ -25,7 +26,7 @@ class TelegramMessageProcessor:
         self.request_service = request_service
         self.bot_name = bot_name
 
-    def process(self, message: TelegramMessage) -> str:
+    def process(self, message: TelegramMessage) -> ApplyResult:
         logger.info(
             "Processing message: update_id=%s message_id=%s chat_id=%s username=%s configured_chat_id=%s text_preview=%r",
             message.update_id,
@@ -48,7 +49,7 @@ class TelegramMessageProcessor:
                 status="skipped-chat",
                 details=f"chat_id={message.chat_id}",
             )
-            return "skipped-chat"
+            return ApplyResult(status="skipped-chat", summary=f"chat_id={message.chat_id}")
 
         if is_command(message):
             logger.info("Ignoring bot command: message_id=%s text=%r", message.message_id, message.text[:200])
@@ -58,7 +59,7 @@ class TelegramMessageProcessor:
                 status="ignored-command",
                 details=message.text,
             )
-            return "ignored-command"
+            return ApplyResult(status="ignored-command", summary="bot command ignored")
 
         result = self.request_service.process_message(message.text)
         logger.info(
@@ -73,4 +74,4 @@ class TelegramMessageProcessor:
             status=result.status,
             details=result.summary,
         )
-        return result.status
+        return result

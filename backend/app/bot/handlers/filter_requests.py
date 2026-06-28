@@ -1,7 +1,11 @@
 from aiogram.types import Message, Update
 
+from app.bot.reply_formatter import GroupReplyFormatter
 from app.telegram.message_processor import TelegramMessageProcessor
 from app.telegram.update import TelegramMessage
+
+
+reply_formatter = GroupReplyFormatter()
 
 
 async def handle_filter_request(
@@ -20,4 +24,8 @@ async def handle_filter_request(
         text=text,
         username=message.from_user.username if message.from_user else None,
     )
-    return processor.process(normalized)
+    result = processor.process(normalized)
+    reply_text = reply_formatter.build_reply(text=text, result=result)
+    if reply_text:
+        await message.reply(reply_text)
+    return result.status
