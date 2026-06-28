@@ -1,0 +1,13 @@
+.env
+.agents/
+.codex/
+.pytest_cache/
+__pycache__/
+*.pyc
+.venv/
+data/
+backend/*.egg-info/
+bot_platform_resync
+bot_platform_resync/
+docs/BOT_PLATFORM_RETHINK.md
+docs/CODE_WALKTHROUGH.md

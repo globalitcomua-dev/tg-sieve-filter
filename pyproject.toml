@@ -1,0 +1,27 @@
+[project]
+name = "tg-sieve-filter"
+version = "0.1.0"
+description = "Telegram-driven sieve filter automation"
+requires-python = ">=3.10"
+
+dependencies = [
+    "aiogram>=3.20,<4",
+    "pydantic>=2.8,<3",
+    "pydantic-settings>=2.3,<3",
+    "PyMySQL>=1.1,<2",
+    "requests>=2.32,<3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0,<9",
+]
+
+[tool.pytest.ini_options]
+pythonpath = [
+    "backend",
+]
+
+[tool.setuptools.packages.find]
+where = ["backend"]
+include = ["app*"]
