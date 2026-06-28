@@ -119,6 +119,6 @@ class FilterRequestParser:
     def _normalize_folder_path(raw_path: str) -> str:
         # Здесь обычный цикл "очищает" путь от лишних пробелов и пустых сегментов.
         # Пример:
-        # `"/OFFSHORE/+Clients/ Kentaro"` -> `"OFFSHORE/+Clients/Kentaro"`.
+        # `"/OFFSHORE/+Clients/ Example Client"` -> `"OFFSHORE/+Clients/Example Client"`.
         segments = [segment.strip() for segment in raw_path.split("/") if segment.strip()]
         return "/".join(segments)

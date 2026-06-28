@@ -25,7 +25,7 @@ def test_loads_selected_real_export_messages():
     messages = load_telegram_desktop_export(export_path)
 
     assert len(messages) > 400
-    assert any("@wise.com" in message.text for message in messages)
+    assert any("@samplebank.example" in message.text for message in messages)
 
 
 def test_real_export_contains_recognizable_requests():
@@ -41,8 +41,8 @@ def test_real_export_contains_recognizable_requests():
     ]
 
     assert len(requests) >= 120
-    assert any(request.values == ["@wise.com"] for request in requests)
+    assert any(request.values == ["@samplebank.example"] for request in requests)
     assert any(
-        request.target.folder_path == "OFFSHORE/+CSPs/UNITED_KINGDOM/Companies_House_UK"
+        request.target.folder_path == "OFFSHORE/+Vendors/UNITED_KINGDOM/Sample_Registry"
         for request in requests
     )

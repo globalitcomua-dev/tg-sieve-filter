@@ -23,7 +23,7 @@ DISCUSSION_HINT_RE = re.compile(
     r"пишет в этот чат|когда максим добавит фильтр|below, example|ниже, пример)",
     re.IGNORECASE,
 )
-QUOTED_CHAT_RE = re.compile(r"\bNexus [^,\n]+,\s*\[\d{2}\.\d{2}\.\d{2}\s+\d{1,2}:\d{2}\]")
+QUOTED_CHAT_RE = re.compile(r"\bFexus [^,\n]+,\s*\[\d{2}\.\d{2}\.\d{2}\s+\d{1,2}:\d{2}\]")
 
 
 def is_filter_request_candidate(text: str) -> bool:

@@ -8,9 +8,9 @@ def make_request(match_type: str, values: list[str], folder_path: str) -> Filter
     return FilterRequest(
         original_text="",
         target=MailboxTarget(
-            imap_uri="imap://info%40nexus.ua@mail.nexus.ua/" + folder_path,
-            mailbox_user="info@nexus.ua",
-            mailbox_host="mail.nexus.ua",
+            imap_uri="imap://info%40global-it.com.ua@mail.global-it.com.ua/" + folder_path,
+            mailbox_user="info@global-it.com.ua",
+            mailbox_host="mail.global-it.com.ua",
             folder_path=folder_path,
         ),
         match_type=match_type,
@@ -28,8 +28,8 @@ def test_writer_appends_rule(tmp_path):
         result = writer.apply(
             make_request(
                 "address",
-                ["enquiries@companieshouse.gov.uk"],
-                "OFFSHORE/+CSPs/UNITED_KINGDOM/Companies_House_UK",
+                ["inbox@sample-registry.example"],
+                "OFFSHORE/+Vendors/UNITED_KINGDOM/Sample_Registry",
             )
         )
     finally:
@@ -37,17 +37,17 @@ def test_writer_appends_rule(tmp_path):
 
     assert result.status == "applied"
     content = script.read_text(encoding="utf-8")
-    assert 'fileinto "OFFSHORE/+CSPs/UNITED_KINGDOM/Companies_House_UK";' in content
-    assert '"enquiries@companieshouse.gov.uk"' in content
+    assert 'fileinto "OFFSHORE/+Vendors/UNITED_KINGDOM/Sample_Registry";' in content
+    assert '"inbox@sample-registry.example"' in content
 
 
 def test_writer_detects_domain_conflict(tmp_path):
     script = tmp_path / "active.sieve"
     script.write_text(
-        '# rule:[+Banks/WISE]\n'
-        'if address :contains ["From","To","Cc"] ["@wise.com"]\n'
+        '# rule:[+Banks/SAMPLE_BANK]\n'
+        'if address :contains ["From","To","Cc"] ["@samplebank.example"]\n'
         "{\n"
-        '  fileinto "OFFSHORE/+Banks/WISE";\n'
+        '  fileinto "OFFSHORE/+Banks/SAMPLE_BANK";\n'
         "  stop;\n"
         "}\n",
         encoding="utf-8",
@@ -57,8 +57,8 @@ def test_writer_detects_domain_conflict(tmp_path):
     result = writer.apply(
         make_request(
             "domain",
-            ["@wise.com"],
-            "OFFSHORE/+CSPs/ANOTHER/Wise",
+            ["@samplebank.example"],
+            "OFFSHORE/+Vendors/ANOTHER/Sample_Bank",
         )
     )
 

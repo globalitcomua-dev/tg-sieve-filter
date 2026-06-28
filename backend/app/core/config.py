@@ -47,7 +47,7 @@ class Settings(BaseSettings):
     mailcow_db_name: str = "mailcow"
     mailcow_db_user: str = "mailcow"
     mailcow_db_password: str = ""
-    mailcow_filter_username: str = "info@nexus.ua"
+    mailcow_filter_username: str = "info@global-it.com.ua"
     mailcow_filter_type: str = "postfilter"
     mailcow_filter_name: str = "postfilter"
     mailcow_filter_desc: str = "Auto-maintained postfilter"

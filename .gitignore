@@ -11,4 +11,3 @@ bot_platform_resync
 bot_platform_resync/
 docs/BOT_PLATFORM_RETHINK.md
 docs/CODE_WALKTHROUGH.md
-backend/tests/fixtures/nexus_chat_sample.txt

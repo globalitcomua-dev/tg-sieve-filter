@@ -9,7 +9,7 @@ def test_accepts_real_request_shapes():
         "banking@premierplus.com.cy -imap://post@mail/OFFSHORE/+CSPs/Cyprus_Papadakis"
     )
     assert is_filter_request_candidate(
-        "Hi! @Maximorus Please new Diane.Vidot@global-ags.com і все, що завершується на "
+        "Hi! @TeamLead Please new diane.vidot@global-ags.com і все, що завершується на "
         "@global-ags.com to imap://post@mail/OFFSHORE/+CSPs/SEYCHELLES/SEYCH_Mayfair"
     )
 
@@ -19,7 +19,7 @@ def test_rejects_status_and_instruction_messages():
         "Done NEW - lyashenko.o@gmail.com - imap://post@mail/OFFSHORE/+Clients/Capeman"
     )
     assert not is_filter_request_candidate(
-        "Created NEW - @zamanbank.kz - imap://post@mail.nexus.ua/OFFSHORE/+Banks/ZAMAN_BANK"
+        "Created NEW - @samplebank.example - imap://post@mail.global-it.com.ua/OFFSHORE/+Banks/SAMPLE_BANK"
     )
     assert not is_filter_request_candidate(
         "Добрый день, эта группа создана для более удобного оформления заявок. "

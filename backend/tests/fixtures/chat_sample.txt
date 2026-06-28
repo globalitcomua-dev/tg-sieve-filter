@@ -1,0 +1,38 @@
+[18.12.2025 14:36] Olivia Hart: New OSSNSD@revenue.ie (и любые адреса с @revenue.ie) to imap://post@mail/OFFSHORE/+Vendors/Ireland/ROS
+[19.12.2025 12:43] Mason Reed: done
+[05.01.2026 11:16] Olivia Hart: Hi! @TeamLead Please new diane.vidot@global-ags.com і все, що завершується на @global-ags.com to imap://post@mail/OFFSHORE/+Vendors/SEYCHELLES/SEYCH_Mayfair
+[05.01.2026 11:25] Mason Reed: Це можна, домен використовується в інших фільтрах
+
+# rule:[+Vendors/SEYCHELLES/SEYCH_Mayfair]
+if address :contains ["From","To","Cc"] ["mayfair","beverley.soomery@global-ags.com"]
+{
+  fileinto "OFFSHORE/+Vendors/SEYCHELLES/SEYCH_Mayfair";
+  stop;
+}
+[05.01.2026 11:28] Mason Reed: зробив
+[13.01.2026 13:23] Adrian Cole: NEW
+от @samplebank.example в папку
+imap://post@mail/OFFSHORE/+Banks/SAMPLE_BANK
+[20.01.2026 17:18] Mason Reed: зробив, попередній завтикав
+[28.04.2026 10:11] Legal Assistant Fexus: NEW
+agent@sampleagent.example
+imap://post%40global-it.com.ua@mail/OFFSHORE/+Vendors/USA/SampleAgent
+[28.04.2026 16:53] Mason Reed: Done
+[18.05.2026 12:22] Legal Assistant Fexus: NEW
+(ira.lee@samplegroup.example), (felix.sant@samplegroup.example), (jane.finch@samplegroup.example), (paul.north@samplegroup.example)
+
+imap://post%40global-it.com.ua@mail/OFFSHORE/+Vendors/MALTA/Sample_Advisor
+[18.05.2026 12:47] Legal Assistant Fexus: NEW
+skyreader@example.com
+
+imap://post%40global-it.com.ua@mail/OFFSHORE/+Clients/ Example Client
+[11.06.2026 16:32] Counsel Fexus: NEW
+
+nikita@samplefincorp.example
+
+imap://info%40global-it.com.ua@mail.global-it.com.ua/OFFSHORE/+Vendors/- Potential New/Switzerland/SampleFincorp
+[11.06.2026 17:05] ops_helper: ✅done
+[17.06.2026 14:08] Olivia Hart: New maria.stone@sampleadvisors.example to imap://info%40global-it.com.ua@mail.global-it.com.ua/OFFSHORE/+Vendors/CYPRUS/Sample_Blueworth
+[17.06.2026 14:19] ops_helper: ✅done
+[26.06.2026 11:09] Olivia Hart: New inbox@sample-registry.example to imap://info%40global-it.com.ua@mail.global-it.com.ua/OFFSHORE/+Vendors/UNITED_KINGDOM/Sample_Registry
+[26.06.2026 15:41] ops_helper: ✅done

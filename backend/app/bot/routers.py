@@ -30,7 +30,7 @@ def build_private_router() -> Router:
     async def on_private_message(message: Message) -> None:
         await message.answer(
             "Личный режим пока в подготовке. Архитектура уже готова для будущих "
-            "команд по Mailcow и документации Nexus."
+            "команд по Mailcow и документации Fexus."
         )
 
     return router

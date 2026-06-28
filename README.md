@@ -16,9 +16,9 @@
 
 ## Поддерживаемые шаблоны сообщений
 
-- `New enquiries@companieshouse.gov.uk to imap://info%40nexus.ua@mail.nexus.ua/OFFSHORE/+CSPs/UNITED_KINGDOM/Companies_House_UK`
-- `NEW от @wise.com в папку imap://post@mail/OFFSHORE/+Banks/WISE`
-- `NEW (a@x.com), (b@x.com) imap://info%40nexus.ua@mail.nexus.ua/OFFSHORE/+Folder`
+- `New inbox@sample-registry.example to imap://info%40global-it.com.ua@mail.global-it.com.ua/OFFSHORE/+Vendors/UNITED_KINGDOM/Sample_Registry`
+- `NEW от @samplebank.example в папку imap://post@mail/OFFSHORE/+Banks/SAMPLE_BANK`
+- `NEW (a@x.com), (b@x.com) imap://info%40global-it.com.ua@mail.global-it.com.ua/OFFSHORE/+Folder`
 - `New user@domain.tld и любые адреса с @domain.tld to imap://...`
 
 Если в тексте есть явный запрос на весь домен, сервис строит доменное правило. Если домен уже используется в другом правиле, заявка помечается как конфликтная и в Mailcow не пишется.
@@ -58,7 +58,7 @@ python -m app.bot
 python -m pytest backend\tests
 ```
 
-Если у вас есть большой экспорт чата, его можно положить как fixture и гонять парсер по реальным формулировкам. Базовый пример уже есть в [`backend/tests/fixtures/nexus_chat_sample.txt`](</E:/Devel/tg-sieve-filter/backend/tests/fixtures/nexus_chat_sample.txt:1>).
+Если у вас есть большой экспорт чата, его можно положить как fixture и гонять парсер по реальным формулировкам. Базовый обезличенный пример уже есть в [`backend/tests/fixtures/chat_sample.txt`](</E:/Devel/tg-sieve-filter/backend/tests/fixtures/chat_sample.txt:1>).
 
 Telegram Desktop JSON export (`result.json`) тоже поддержан. Локальные regression tests для него находятся в [`backend/tests/test_export_json.py`](</E:/Devel/tg-sieve-filter/backend/tests/test_export_json.py:1>), а загрузчик экспорта в [`backend/app/telegram/export_json.py`](</E:/Devel/tg-sieve-filter/backend/app/telegram/export_json.py:1>).
 
