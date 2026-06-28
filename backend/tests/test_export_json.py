@@ -1,12 +1,25 @@
+import os
 from pathlib import Path
 
 from app.filters.parser import FilterRequestParser
 from app.telegram.export_json import load_telegram_desktop_export
 
 
-def test_loads_selected_real_export_messages():
-    export_path = Path(r"C:\Users\ramadan\Downloads\Telegram Desktop\thunderbird_filters\result.json")
+def _get_export_path() -> Path | None:
+    raw_path = os.getenv("TELEGRAM_EXPORT_JSON_PATH", "").strip()
+    if not raw_path:
+        return None
+
+    export_path = Path(raw_path)
     if not export_path.exists():
+        return None
+
+    return export_path
+
+
+def test_loads_selected_real_export_messages():
+    export_path = _get_export_path()
+    if export_path is None:
         return
 
     messages = load_telegram_desktop_export(export_path)
@@ -16,8 +29,8 @@ def test_loads_selected_real_export_messages():
 
 
 def test_real_export_contains_recognizable_requests():
-    export_path = Path(r"C:\Users\ramadan\Downloads\Telegram Desktop\thunderbird_filters\result.json")
-    if not export_path.exists():
+    export_path = _get_export_path()
+    if export_path is None:
         return
 
     parser = FilterRequestParser()

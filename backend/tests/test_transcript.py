@@ -1,14 +1,50 @@
-from pathlib import Path
-
 from app.filters.parser import FilterRequestParser
 from app.telegram.transcript import parse_transcript_messages
 
 
-def test_parses_transcript_messages_from_fixture():
-    fixture_path = Path("backend/tests/fixtures/nexus_chat_sample.txt")
-    transcript = fixture_path.read_text(encoding="utf-8")
+TRANSCRIPT_SAMPLE = """[18.12.2025 14:36] Ekaterina S: New OSSNSD@revenue.ie (и любые  адреса с @revenue.ie )  to imap://post@mail/OFFSHORE/+CSPs/Ireland/ROS
+[19.12.2025 12:43] Maxim Khudik: done
+[05.01.2026 11:16] Ekaterina S: Hi! @Maximorus Please new Diane.Vidot@global-ags.com  і  все, що завершується на @global-ags.com  to imap://post@mail/OFFSHORE/+CSPs/SEYCHELLES/SEYCH_Mayfair
+[05.01.2026 11:25] Maxim Khudik: Це можна, домен використовується в інших фільтрах
 
-    messages = parse_transcript_messages(transcript)
+# rule:[+CSPs/SEYCHELLES/SEYCH_Mayfair]
+if address :contains ["From","To","Cc"] ["mayfair","Beverley.Soomery@global-ags.com"]
+{
+  fileinto "OFFSHORE/+CSPs/SEYCHELLES/SEYCH_Mayfair";
+  stop;
+}
+[05.01.2026 11:28] Maxim Khudik: зробев
+[13.01.2026 13:23] Stefan Martynenko: NEW
+от @wise.com в папку
+imap://post@mail/OFFSHORE/+Banks/WISE
+[20.01.2026 17:18] Maxim Khudik: зробив, попередній завтикав
+[28.04.2026 10:11] Legal Assistant Nexus: NEW
+agent@washingtonregisteredagent.com
+imap://post%40nexus.ua@mail/OFFSHORE/+CSPs/USA/Washingtonregisteredagent
+[28.04.2026 16:53] Maxim Khudik: Done
+[18.05.2026 12:22] Legal Assistant Nexus: NEW
+(i.zammit@sheltonsgroup.com.mt), (f.sant@sheltonsgroup.com.mt), (j.fenech@sheltonsgroup.com.mt), (p.narwani@sheltonsgroup.com.mt)
+
+imap://post%40nexus.ua@mail/OFFSHORE/+CSPs/MALTA/Paul McKenna
+[18.05.2026 12:47] Legal Assistant Nexus: NEW
+bangkokmastery@gmail.com
+
+imap://post%40nexus.ua@mail/OFFSHORE/+Clients/ Kentaro
+[11.06.2026 16:32] Lawyer Nexus: NEW
+
+nikita@fincorpo.com
+
+imap://info%40nexus.ua@mail.nexus.ua/OFFSHORE/+CSPs/- Potential New/Switzerland/Fincorpo
+[11.06.2026 17:05] dev_null: ✅done
+[17.06.2026 14:08] Ekaterina S: New maria.stroppou@assertus.com.cy  to imap://info%40nexus.ua@mail.nexus.ua/OFFSHORE/+CSPs/CYPRUS/ASSERTUS_BLUEWORTH
+[17.06.2026 14:19] dev_null: ✅done
+[26.06.2026 11:09] Ekaterina S: New enquiries@companieshouse.gov.uk to imap://info%40nexus.ua@mail.nexus.ua/OFFSHORE/+CSPs/UNITED_KINGDOM/Companies_House_UK
+[26.06.2026 15:41] dev_null: ✅done
+"""
+
+
+def test_parses_transcript_messages_from_fixture():
+    messages = parse_transcript_messages(TRANSCRIPT_SAMPLE)
 
     assert len(messages) == 17
     assert messages[0].author == "Ekaterina S"
@@ -17,13 +53,10 @@ def test_parses_transcript_messages_from_fixture():
 
 
 def test_extracts_filter_requests_from_transcript_fixture():
-    fixture_path = Path("backend/tests/fixtures/nexus_chat_sample.txt")
-    transcript = fixture_path.read_text(encoding="utf-8")
-
     parser = FilterRequestParser()
     requests = [
         parser.parse(message.body)
-        for message in parse_transcript_messages(transcript)
+        for message in parse_transcript_messages(TRANSCRIPT_SAMPLE)
     ]
     requests = [request for request in requests if request is not None]
 
