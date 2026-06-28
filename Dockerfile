@@ -11,6 +11,11 @@ COPY backend ./backend
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir .
 
-RUN mkdir -p /app/data
+RUN addgroup --system app && \
+    adduser --system --ingroup app app && \
+    mkdir -p /app/data && \
+    chown -R app:app /app
+
+USER app
 
 CMD ["python", "-m", "app.bot"]

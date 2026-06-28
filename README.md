@@ -74,6 +74,53 @@ docker compose logs -f tgz-filter
 
 Контейнер стартует listener командой `python -m app.bot` и хранит локальный state в volume `./data`.
 
+## Deploy Near Mailcow
+
+Если бот запускается на том же хосте, где работает Mailcow, удобнее использовать [`docker-compose.deploy.yml`](</E:/Devel/tg-sieve-filter/docker-compose.deploy.yml:1>) и отдельный [` .env.deploy.example`](</E:/Devel/tg-sieve-filter/.env.deploy.example:1>) как основу для production `.env`.
+
+Идея такая:
+
+- контейнер не публикует наружу никакие порты;
+- контейнер подключается только к внешней Docker network Mailcow;
+- root внутри контейнера не используется;
+- файловая система контейнера работает в `read_only`, кроме volume `./data`;
+- Linux capabilities сброшены через `cap_drop: [ALL]`.
+
+Пример запуска:
+
+```bash
+cp .env.deploy.example .env
+docker login ghcr.io
+docker compose -f docker-compose.deploy.yml up -d
+```
+
+### Как узнать имя Mailcow network
+
+На сервере с Mailcow:
+
+```bash
+docker network ls | grep mailcow
+```
+
+И подставьте найденное имя в:
+
+```env
+MAILCOW_DOCKER_NETWORK=mailcowdockerized_mailcow-network
+```
+
+### Что лучше для безопасности
+
+Самый безопасный вариант — не использовать для бота "сильного" DB-пользователя Mailcow.
+Лучше создать отдельного MariaDB/MySQL пользователя только с нужными правами на таблицу `sieve_filters`.
+
+Минимально разумные права для текущей логики:
+
+- `SELECT`
+- `INSERT`
+- `UPDATE`
+
+Если у вас есть возможность выдать права только на таблицу `mailcow.sieve_filters`, это лучше, чем давать доступ ко всей базе.
+
 ## GitHub Actions
 
 В репозитории уже подготовлены два workflow:

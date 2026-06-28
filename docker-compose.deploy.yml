@@ -1,0 +1,24 @@
+services:
+  tgz-filter:
+    image: ghcr.io/globalitcomua-dev/tg-sieve-filter:latest
+    container_name: tgz-filter
+    restart: unless-stopped
+    init: true
+    env_file:
+      - .env
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    volumes:
+      - ./data:/app/data
+    networks:
+      - mailcow
+
+networks:
+  mailcow:
+    external: true
+    name: ${MAILCOW_DOCKER_NETWORK}
