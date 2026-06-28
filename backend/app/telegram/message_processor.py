@@ -1,7 +1,13 @@
+import logging
+
+from app.core.config import settings
 from app.repositories.state import StateRepository
 from app.services.filter_request_service import FilterRequestService
 from app.telegram.filters import is_allowed_chat, is_command
 from app.telegram.update import TelegramMessage
+
+
+logger = logging.getLogger(__name__)
 
 
 class TelegramMessageProcessor:
@@ -20,8 +26,22 @@ class TelegramMessageProcessor:
         self.bot_name = bot_name
 
     def process(self, message: TelegramMessage) -> str:
+        logger.info(
+            "Processing message: update_id=%s message_id=%s chat_id=%s username=%s configured_chat_id=%s text_preview=%r",
+            message.update_id,
+            message.message_id,
+            message.chat_id,
+            message.username,
+            settings.telegram_chat_id or "<any>",
+            message.text[:200],
+        )
+
         if not is_allowed_chat(message):
-            print(f"Skip chat_id={message.chat_id}", flush=True)
+            logger.warning(
+                "Skipping message because chat_id is not allowed: actual=%s expected=%s",
+                message.chat_id,
+                settings.telegram_chat_id,
+            )
             self.repository.save_processed_request(
                 update_id=message.update_id,
                 message_id=message.message_id,
@@ -31,6 +51,7 @@ class TelegramMessageProcessor:
             return "skipped-chat"
 
         if is_command(message):
+            logger.info("Ignoring bot command: message_id=%s text=%r", message.message_id, message.text[:200])
             self.repository.save_processed_request(
                 update_id=message.update_id,
                 message_id=message.message_id,
@@ -40,14 +61,16 @@ class TelegramMessageProcessor:
             return "ignored-command"
 
         result = self.request_service.process_message(message.text)
+        logger.info(
+            "Business processing finished: message_id=%s status=%s summary=%s",
+            message.message_id,
+            result.status,
+            result.summary,
+        )
         self.repository.save_processed_request(
             update_id=message.update_id,
             message_id=message.message_id,
             status=result.status,
             details=result.summary,
-        )
-        print(
-            f"Processed telegram message_id={message.message_id} status={result.status}: {result.summary}",
-            flush=True,
         )
         return result.status

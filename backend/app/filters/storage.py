@@ -1,9 +1,13 @@
 from abc import ABC, abstractmethod
+import logging
 from pathlib import Path
 
 import pymysql
 
 from app.core.config import settings
+
+
+logger = logging.getLogger(__name__)
 
 
 class FilterStorage(ABC):
@@ -47,16 +51,34 @@ class MailcowDbFilterStorage(FilterStorage):
     def load_script(self) -> str:
         # `with` открывает и потом автоматически закрывает соединение.
         # Это безопаснее, чем помнить о close() вручную в каждом месте.
-        with self._connect() as connection:
-            with connection.cursor() as cursor:
-                row = self._select_active_filter(cursor)
-                return "" if row is None or row["script_data"] is None else row["script_data"]
-
-    def save_script(self, script: str) -> str:
+        logger.info(
+            "Loading sieve script from Mailcow DB: host=%s db=%s username=%s filter_type=%s script_name=%s",
+            settings.mailcow_db_host,
+            settings.mailcow_db_name,
+            settings.mailcow_filter_username,
+            settings.mailcow_filter_type,
+            settings.mailcow_filter_name,
+        )
         with self._connect() as connection:
             with connection.cursor() as cursor:
                 row = self._select_active_filter(cursor)
                 if row is None:
+                    logger.warning("No existing sieve_filters row found for configured selector")
+                return "" if row is None or row["script_data"] is None else row["script_data"]
+
+    def save_script(self, script: str) -> str:
+        logger.info(
+            "Saving sieve script to Mailcow DB: username=%s filter_type=%s script_name=%s script_size=%s",
+            settings.mailcow_filter_username,
+            settings.mailcow_filter_type,
+            settings.mailcow_filter_name,
+            len(script),
+        )
+        with self._connect() as connection:
+            with connection.cursor() as cursor:
+                row = self._select_active_filter(cursor)
+                if row is None:
+                    logger.info("No existing row found, inserting new sieve_filters record")
                     # Если активной записи нет, создаём новую.
                     cursor.execute(
                         """
@@ -74,6 +96,7 @@ class MailcowDbFilterStorage(FilterStorage):
                         ),
                     )
                 else:
+                    logger.info("Updating existing sieve_filters row id=%s", row["id"])
                     # Если запись уже есть, обновляем её содержимое.
                     cursor.execute(
                         """
@@ -124,6 +147,13 @@ class MailcowDbFilterStorage(FilterStorage):
         # Подключение вынесено в отдельную функцию, чтобы:
         # 1. не дублировать код,
         # 2. проще было менять настройки или подменять соединение в будущем.
+        logger.info(
+            "Opening Mailcow DB connection: host=%s port=%s db=%s user=%s",
+            settings.mailcow_db_host,
+            settings.mailcow_db_port,
+            settings.mailcow_db_name,
+            settings.mailcow_db_user,
+        )
         return pymysql.connect(
             host=settings.mailcow_db_host,
             port=settings.mailcow_db_port,
