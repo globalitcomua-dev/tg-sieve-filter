@@ -31,12 +31,38 @@ class MailboxValidator:
             settings.imap_default_port,
         )
 
-        client = self._connect(target.mailbox_host)
+        try:
+            client = self._connect(target.mailbox_host)
+        except (OSError, imaplib.IMAP4.error) as exc:
+            logger.exception(
+                "IMAP connection failed: mailbox_user=%s mailbox_host=%s port=%s",
+                target.mailbox_user,
+                target.mailbox_host,
+                settings.imap_default_port,
+            )
+            return False, f"IMAP connection failed: {target.mailbox_host}:{settings.imap_default_port} ({exc})"
+
         try:
             logger.info("IMAP connected: host=%s", target.mailbox_host)
-            client.login(target.mailbox_user, password)
+            try:
+                client.login(target.mailbox_user, password)
+            except imaplib.IMAP4.error as exc:
+                logger.exception(
+                    "IMAP login failed: mailbox_user=%s mailbox_host=%s",
+                    target.mailbox_user,
+                    target.mailbox_host,
+                )
+                return False, f"IMAP login failed for {target.mailbox_user}@{target.mailbox_host}: {exc}"
             logger.info("IMAP login succeeded: mailbox_user=%s", target.mailbox_user)
-            status, mailboxes = client.list()
+            try:
+                status, mailboxes = client.list()
+            except imaplib.IMAP4.error as exc:
+                logger.exception(
+                    "IMAP LIST raised error: mailbox_user=%s mailbox_host=%s",
+                    target.mailbox_user,
+                    target.mailbox_host,
+                )
+                return False, f"IMAP LIST failed for {target.mailbox_user}@{target.mailbox_host}: {exc}"
             if status != "OK":
                 logger.warning(
                     "IMAP LIST failed: mailbox_user=%s mailbox_host=%s status=%s",

@@ -17,8 +17,14 @@ class GroupReplyFormatter:
             return "✅DONE"
 
         if result.status == "invalid-mailbox":
-            if folder:
+            if result.summary.startswith("mailbox not found") and folder:
                 return f"Не обнаружил папку, либо она названа иначе: {folder}"
+            if result.summary.startswith("IMAP connection failed"):
+                return f"Не смог подключиться к IMAP для проверки папки: {result.summary}"
+            if result.summary.startswith("IMAP login failed"):
+                return "Не смог войти в IMAP для проверки папки. Проверь логин/пароль ящика."
+            if result.summary.startswith("IMAP LIST failed"):
+                return f"IMAP ответил ошибкой при проверке папки: {result.summary}"
             return "Не обнаружил папку, либо она названа иначе."
 
         if result.status == "duplicate":
