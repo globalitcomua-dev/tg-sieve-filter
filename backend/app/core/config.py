@@ -49,7 +49,9 @@ class Settings(BaseSettings):
     mailcow_db_password: str = ""
     mailcow_filter_username: str = "info@global-it.com.ua"
     mailcow_filter_type: str = "postfilter"
-    mailcow_filter_name: str = "postfilter"
+    # В актуальной схеме Mailcow это технический статус script-а:
+    # обычно `active` или `inactive`.
+    mailcow_filter_name: str = "active"
     mailcow_filter_desc: str = "Auto-maintained postfilter"
 
     # IMAP-проверка папки опциональна.

@@ -31,9 +31,10 @@
 
 - `username=MAILCOW_FILTER_USERNAME`
 - `filter_type=MAILCOW_FILTER_TYPE`
-- `active=1`
+- `script_name=MAILCOW_FILTER_NAME`
 
 Если активной записи ещё нет, сервис создаёт новую с `script_name` и `script_desc` из `.env`.
+Для актуальной схемы Mailcow `MAILCOW_FILTER_NAME` обычно должен быть `active`.
 
 `/api/v1/edit/user-acl` для этой задачи не подходит: это ACL endpoint, а не редактирование содержимого Sieve-фильтров.
 
@@ -120,6 +121,38 @@ MAILCOW_DOCKER_NETWORK=mailcowdockerized_mailcow-network
 - `UPDATE`
 
 Если у вас есть возможность выдать права только на таблицу `mailcow.sieve_filters`, это лучше, чем давать доступ ко всей базе.
+
+### Как посмотреть реальную структуру `sieve_filters` в своей Mailcow
+
+На хосте Mailcow можно зайти в MariaDB контейнер и выполнить:
+
+```bash
+docker exec -it mysql-mailcow mysql -u root -p mailcow
+```
+
+А внутри MariaDB:
+
+```sql
+SHOW CREATE TABLE sieve_filters\G
+DESCRIBE sieve_filters;
+
+SELECT id, username, filter_type, script_name, script_desc
+FROM sieve_filters
+ORDER BY id DESC
+LIMIT 20;
+
+SELECT id, username, filter_type, script_name, script_desc, LENGTH(script_data) AS script_size
+FROM sieve_filters
+WHERE username = 'info@nexus.ua'
+  AND filter_type = 'postfilter'
+ORDER BY id DESC;
+```
+
+Если имя MariaDB контейнера у вас другое, сначала можно проверить:
+
+```bash
+docker ps --format '{{.Names}}' | grep mailcow
+```
 
 ## GitHub Actions
 

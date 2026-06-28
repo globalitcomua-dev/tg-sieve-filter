@@ -40,6 +40,10 @@ class FileFilterStorage(FilterStorage):
 class MailcowDbFilterStorage(FilterStorage):
     # Этот вариант работает с "боевым" источником истины:
     # таблицей `sieve_filters` в базе Mailcow.
+    #
+    # В актуальной схеме Mailcow отдельного поля `active` нет.
+    # Состояние script-а хранится в поле `script_name`
+    # со значениями вроде `active` / `inactive`.
     def load_script(self) -> str:
         # `with` открывает и потом автоматически закрывает соединение.
         # Это безопаснее, чем помнить о close() вручную в каждом месте.
@@ -57,9 +61,9 @@ class MailcowDbFilterStorage(FilterStorage):
                     cursor.execute(
                         """
                         insert into sieve_filters
-                            (username, active, filter_type, script_name, script_desc, script_data)
+                            (username, filter_type, script_name, script_desc, script_data)
                         values
-                            (%s, 1, %s, %s, %s, %s)
+                            (%s, %s, %s, %s, %s)
                         """,
                         (
                             settings.mailcow_filter_username,
@@ -76,8 +80,7 @@ class MailcowDbFilterStorage(FilterStorage):
                         update sieve_filters
                         set script_data = %s,
                             script_name = %s,
-                            script_desc = %s,
-                            active = 1
+                            script_desc = %s
                         where id = %s
                         """,
                         (
@@ -104,13 +107,14 @@ class MailcowDbFilterStorage(FilterStorage):
             from sieve_filters
             where username = %s
               and filter_type = %s
-              and active = 1
+              and script_name = %s
             order by id desc
             limit 1
             """,
             (
                 settings.mailcow_filter_username,
                 settings.mailcow_filter_type,
+                settings.mailcow_filter_name,
             ),
         )
         return cursor.fetchone()
