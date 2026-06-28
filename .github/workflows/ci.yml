@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - "feature/**"
+      - "codex/**"
+  pull_request:
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install project with dev dependencies
+        run: pip install -e .[dev]
+
+      - name: Run test suite
+        run: python -m pytest backend/tests
+
+      - name: Build Docker image
+        run: docker build -t tg-sieve-filter:ci .
