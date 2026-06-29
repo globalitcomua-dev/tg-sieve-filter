@@ -23,3 +23,4 @@ class ApplyResult:
     status: str
     summary: str
     rendered_rule: str | None = None
+    related_rule: str | None = None

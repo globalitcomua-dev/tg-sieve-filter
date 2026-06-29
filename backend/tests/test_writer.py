@@ -36,6 +36,7 @@ def test_writer_appends_rule(tmp_path):
         settings.auto_apply = original_auto_apply
 
     assert result.status == "applied"
+    assert result.related_rule is None
     content = script.read_text(encoding="utf-8")
     assert 'fileinto "OFFSHORE/+Vendors/UNITED_KINGDOM/Sample_Registry";' in content
     assert '"inbox@sample-registry.example"' in content
@@ -63,4 +64,68 @@ def test_writer_detects_domain_conflict(tmp_path):
     )
 
     assert result.status == "conflict"
-    assert "already exists" in result.summary
+    assert "already routes to OFFSHORE/+Banks/SAMPLE_BANK" in result.summary
+    assert result.related_rule is not None
+    assert 'fileinto "OFFSHORE/+Banks/SAMPLE_BANK";' in result.related_rule
+
+
+def test_writer_extends_existing_rule_for_same_domain_and_folder(tmp_path):
+    script = tmp_path / "active.sieve"
+    script.write_text(
+        '# rule:[+CSPs/GlobalIT]\n'
+        'if address :contains ["From","To","Cc"] ["d.shylenko@global-it.com.ua"]\n'
+        "{\n"
+        '  fileinto "OFFSHORE/+CSPs/GlobalIT";\n'
+        "  stop;\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    writer = SieveScriptWriter(FileFilterStorage(script))
+
+    original_auto_apply = settings.auto_apply
+    settings.auto_apply = True
+    try:
+        result = writer.apply(
+            make_request(
+                "address",
+                ["e.krashchenko@global-it.com.ua"],
+                "OFFSHORE/+CSPs/GlobalIT",
+            )
+        )
+    finally:
+        settings.auto_apply = original_auto_apply
+
+    assert result.status == "applied"
+    assert result.related_rule is not None
+    assert '"d.shylenko@global-it.com.ua"' in result.related_rule
+    assert '"d.shylenko@global-it.com.ua","e.krashchenko@global-it.com.ua"' in result.rendered_rule
+    content = script.read_text(encoding="utf-8")
+    assert content.count('# rule:[+CSPs/GlobalIT]') == 1
+    assert '"d.shylenko@global-it.com.ua","e.krashchenko@global-it.com.ua"' in content
+
+
+def test_writer_detects_same_domain_other_folder_conflict_for_address(tmp_path):
+    script = tmp_path / "active.sieve"
+    script.write_text(
+        '# rule:[+CSPs/GlobalIT]\n'
+        'if address :contains ["From","To","Cc"] ["d.shylenko@global-it.com.ua"]\n'
+        "{\n"
+        '  fileinto "OFFSHORE/+CSPs/GlobalIT";\n'
+        "  stop;\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    writer = SieveScriptWriter(FileFilterStorage(script))
+
+    result = writer.apply(
+        make_request(
+            "address",
+            ["e.krashchenko@global-it.com.ua"],
+            "OFFSHORE/+Clients/AnotherFolder",
+        )
+    )
+
+    assert result.status == "conflict"
+    assert "already routes to OFFSHORE/+CSPs/GlobalIT" in result.summary
+    assert result.related_rule is not None
+    assert 'fileinto "OFFSHORE/+CSPs/GlobalIT";' in result.related_rule

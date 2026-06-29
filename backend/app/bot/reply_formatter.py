@@ -12,28 +12,44 @@ class GroupReplyFormatter:
         values = ", ".join(request.values) if request else None
 
         if result.status == "applied":
+            if result.related_rule and result.rendered_rule:
+                return (
+                    f"✅DONE - {values} - {folder}\n"
+                    f"Extended existing rule:\n{result.related_rule.strip()}\n"
+                    f"Updated rule:\n{result.rendered_rule.strip()}"
+                )
             if values and folder:
                 return f"✅DONE - {values} - {folder}"
             return "✅DONE"
 
         if result.status == "invalid-mailbox":
             if result.summary.startswith("mailbox not found") and folder:
-                return f"Не обнаружил папку, либо она названа иначе: {folder}"
+                return f"Mailbox not found or named differently: {folder}"
             if result.summary.startswith("IMAP connection failed"):
-                return f"Не смог подключиться к IMAP для проверки папки: {result.summary}"
+                return f"Unable to connect to IMAP for mailbox validation: {result.summary}"
             if result.summary.startswith("IMAP login failed"):
-                return "Не смог войти в IMAP для проверки папки. Проверь логин/пароль ящика."
+                return "Unable to log in to IMAP for mailbox validation. Check the mailbox credentials."
             if result.summary.startswith("IMAP LIST failed"):
-                return f"IMAP ответил ошибкой при проверке папки: {result.summary}"
-            return "Не обнаружил папку, либо она названа иначе."
+                return f"IMAP returned an error during mailbox validation: {result.summary}"
+            return "Mailbox not found or named differently."
 
         if result.status == "duplicate":
-            return f"Найден дубль: {result.summary}"
+            if result.related_rule:
+                return f"Duplicate rule found: {result.summary}\nExisting rule:\n{result.related_rule.strip()}"
+            return f"Duplicate rule found: {result.summary}"
 
         if result.status == "conflict":
-            return f"Конфликт правила: {result.summary}"
+            if result.related_rule:
+                return f"Rule conflict: {result.summary}\nConflicting rule:\n{result.related_rule.strip()}"
+            return f"Rule conflict: {result.summary}"
 
         if result.status == "dry-run":
+            if result.related_rule and result.rendered_rule:
+                return (
+                    f"DRY-RUN - {values} - {folder}\n"
+                    f"Would extend existing rule:\n{result.related_rule.strip()}\n"
+                    f"Resulting rule:\n{result.rendered_rule.strip()}"
+                )
             if values and folder:
                 return f"DRY-RUN - {values} - {folder}"
             return f"DRY-RUN - {result.summary}"

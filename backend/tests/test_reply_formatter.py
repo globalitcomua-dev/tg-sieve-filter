@@ -28,7 +28,7 @@ def test_formats_missing_mailbox_reply():
 
     reply = formatter.build_reply(text, result)
 
-    assert reply == "Не обнаружил папку, либо она названа иначе: OFFSHORE/+CSPs/GlobalIT"
+    assert reply == "Mailbox not found or named differently: OFFSHORE/+CSPs/GlobalIT"
 
 
 def test_formats_duplicate_reply():
@@ -40,11 +40,81 @@ def test_formats_duplicate_reply():
     result = ApplyResult(
         status="duplicate",
         summary="matching rule already exists for OFFSHORE/+CSPs/GlobalIT",
+        related_rule=(
+            '# rule:[+CSPs/GlobalIT]\n'
+            'if address :contains ["From","To","Cc"] ["d.shylenko@global-it.com.ua"]\n'
+            "{\n"
+            '  fileinto "OFFSHORE/+CSPs/GlobalIT";\n'
+            "  stop;\n"
+            "}\n"
+        ),
     )
 
     reply = formatter.build_reply(text, result)
 
-    assert "Найден дубль:" in reply
+    assert "Duplicate rule found:" in reply
+    assert "Existing rule:" in reply
+    assert 'fileinto "OFFSHORE/+CSPs/GlobalIT";' in reply
+
+
+def test_formats_conflict_reply_with_rule_body():
+    text = (
+        "NEW\n\n"
+        "e.krashchenko@global-it.com.ua\n\n"
+        "imap://info%40nexus.ua@mail.nexus.ua/OFFSHORE/+Clients/AnotherFolder"
+    )
+    result = ApplyResult(
+        status="conflict",
+        summary="domain @global-it.com.ua already routes to OFFSHORE/+CSPs/GlobalIT",
+        related_rule=(
+            '# rule:[+CSPs/GlobalIT]\n'
+            'if address :contains ["From","To","Cc"] ["d.shylenko@global-it.com.ua"]\n'
+            "{\n"
+            '  fileinto "OFFSHORE/+CSPs/GlobalIT";\n'
+            "  stop;\n"
+            "}\n"
+        ),
+    )
+
+    reply = formatter.build_reply(text, result)
+
+    assert "Rule conflict:" in reply
+    assert "Conflicting rule:" in reply
+    assert 'fileinto "OFFSHORE/+CSPs/GlobalIT";' in reply
+
+
+def test_formats_applied_extension_reply_with_before_and_after():
+    text = (
+        "NEW\n\n"
+        "e.krashchenko@global-it.com.ua\n\n"
+        "imap://info%40nexus.ua@mail.nexus.ua/OFFSHORE/+CSPs/GlobalIT"
+    )
+    result = ApplyResult(
+        status="applied",
+        summary="rule extended",
+        related_rule=(
+            '# rule:[+CSPs/GlobalIT]\n'
+            'if address :contains ["From","To","Cc"] ["d.shylenko@global-it.com.ua"]\n'
+            "{\n"
+            '  fileinto "OFFSHORE/+CSPs/GlobalIT";\n'
+            "  stop;\n"
+            "}\n"
+        ),
+        rendered_rule=(
+            '# rule:[+CSPs/GlobalIT]\n'
+            'if address :contains ["From","To","Cc"] ["d.shylenko@global-it.com.ua","e.krashchenko@global-it.com.ua"]\n'
+            "{\n"
+            '  fileinto "OFFSHORE/+CSPs/GlobalIT";\n'
+            "  stop;\n"
+            "}\n"
+        ),
+    )
+
+    reply = formatter.build_reply(text, result)
+
+    assert "Extended existing rule:" in reply
+    assert "Updated rule:" in reply
+    assert '"d.shylenko@global-it.com.ua","e.krashchenko@global-it.com.ua"' in reply
 
 
 def test_formats_imap_connection_reply():
@@ -60,4 +130,4 @@ def test_formats_imap_connection_reply():
 
     reply = formatter.build_reply(text, result)
 
-    assert "Не смог подключиться к IMAP" in reply
+    assert "Unable to connect to IMAP" in reply
