@@ -22,55 +22,58 @@ class MailboxValidator:
             logger.warning("IMAP validation failed: missing password for mailbox_user=%s", target.mailbox_user)
             return False, f"missing IMAP password for {target.mailbox_user}"
 
+        validation_host = self._resolve_validation_host(target)
         logger.info(
-            "IMAP validation started: mailbox_user=%s mailbox_host=%s folder_path=%s ssl=%s port=%s",
+            "IMAP validation started: mailbox_user=%s mailbox_host=%s validation_host=%s folder_path=%s ssl=%s port=%s",
             target.mailbox_user,
             target.mailbox_host,
+            validation_host,
             target.folder_path,
             settings.imap_use_ssl,
             settings.imap_default_port,
         )
 
         try:
-            client = self._connect(target.mailbox_host)
+            client = self._connect(validation_host)
         except (OSError, imaplib.IMAP4.error) as exc:
             logger.exception(
-                "IMAP connection failed: mailbox_user=%s mailbox_host=%s port=%s",
+                "IMAP connection failed: mailbox_user=%s mailbox_host=%s validation_host=%s port=%s",
                 target.mailbox_user,
                 target.mailbox_host,
+                validation_host,
                 settings.imap_default_port,
             )
-            return False, f"IMAP connection failed: {target.mailbox_host}:{settings.imap_default_port} ({exc})"
+            return False, f"IMAP connection failed: {validation_host}:{settings.imap_default_port} ({exc})"
 
         try:
-            logger.info("IMAP connected: host=%s", target.mailbox_host)
+            logger.info("IMAP connected: host=%s", validation_host)
             try:
                 client.login(target.mailbox_user, password)
             except imaplib.IMAP4.error as exc:
                 logger.exception(
-                    "IMAP login failed: mailbox_user=%s mailbox_host=%s",
+                    "IMAP login failed: mailbox_user=%s validation_host=%s",
                     target.mailbox_user,
-                    target.mailbox_host,
+                    validation_host,
                 )
-                return False, f"IMAP login failed for {target.mailbox_user}@{target.mailbox_host}: {exc}"
+                return False, f"IMAP login failed for {target.mailbox_user}@{validation_host}: {exc}"
             logger.info("IMAP login succeeded: mailbox_user=%s", target.mailbox_user)
             try:
                 status, mailboxes = client.list()
             except imaplib.IMAP4.error as exc:
                 logger.exception(
-                    "IMAP LIST raised error: mailbox_user=%s mailbox_host=%s",
+                    "IMAP LIST raised error: mailbox_user=%s validation_host=%s",
                     target.mailbox_user,
-                    target.mailbox_host,
+                    validation_host,
                 )
-                return False, f"IMAP LIST failed for {target.mailbox_user}@{target.mailbox_host}: {exc}"
+                return False, f"IMAP LIST failed for {target.mailbox_user}@{validation_host}: {exc}"
             if status != "OK":
                 logger.warning(
-                    "IMAP LIST failed: mailbox_user=%s mailbox_host=%s status=%s",
+                    "IMAP LIST failed: mailbox_user=%s validation_host=%s status=%s",
                     target.mailbox_user,
-                    target.mailbox_host,
+                    validation_host,
                     status,
                 )
-                return False, f"LIST failed for {target.mailbox_user}@{target.mailbox_host}"
+                return False, f"LIST failed for {target.mailbox_user}@{validation_host}"
 
             # Множество (`set`) здесь удобно тем, что проверка
             # `target.folder_path in available` работает быстро и читаемо.
@@ -113,6 +116,11 @@ class MailboxValidator:
         if settings.imap_use_ssl:
             return imaplib.IMAP4_SSL(host, settings.imap_default_port)
         return imaplib.IMAP4(host, settings.imap_default_port)
+
+    @staticmethod
+    def _resolve_validation_host(target: MailboxTarget) -> str:
+        override = settings.imap_validation_host_override.strip()
+        return override or target.mailbox_host
 
     @staticmethod
     def _normalize_list_entry(entry: str) -> str:

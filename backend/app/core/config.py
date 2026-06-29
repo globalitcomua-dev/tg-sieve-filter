@@ -58,6 +58,7 @@ class Settings(BaseSettings):
     # Если включить её, перед записью правила сервис проверит,
     # существует ли указанная папка в целевом ящике.
     imap_validate_mailbox: bool = False
+    imap_validation_host_override: str = ""
     imap_default_port: int = 993
     imap_use_ssl: bool = True
     imap_password: str = ""

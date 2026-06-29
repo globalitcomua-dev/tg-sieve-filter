@@ -38,6 +38,25 @@
 
 `/api/v1/edit/user-acl` для этой задачи не подходит: это ACL endpoint, а не редактирование содержимого Sieve-фильтров.
 
+## IMAP Validation
+
+Если `IMAP_VALIDATE_MAILBOX=true`, бот перед записью правила логинится в IMAP и проверяет, существует ли указанная папка.
+
+Для Mailcow на том же Docker-хосте часто удобнее проверять папку не через внешний домен вроде `mail.example.com`, а через внутренний hostname Dovecot в Docker network.
+
+Для этого можно задать:
+
+```env
+IMAP_VALIDATION_HOST_OVERRIDE=dovecot
+```
+
+Тогда:
+
+- в самой заявке можно оставить обычный `imap://info%40example.com@mail.example.com/...`
+- но шаг IMAP-проверки пойдёт во внутренний хост `dovecot:993`
+
+Это особенно полезно, если внешний `993` недоступен из контейнера, а внутренний Dovecot в сети Mailcow доступен.
+
 ## Запуск локально
 
 ```powershell
